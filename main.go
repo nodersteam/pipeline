@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"time"
 )
 
@@ -20,6 +21,7 @@ func generateNumbers(limit int) <-chan int {
 	}()
 	return out
 }
+
 func filterNegative(in <-chan int) <-chan int {
 	out := make(chan int)
 	go func() {
@@ -97,16 +99,12 @@ func pipeline(limit int) <-chan int {
 			buffer.Push(num)
 
 			if time.Since(lastFlushTime) > FlushInterval {
-				for _, item := range buffer.Flush() {
-					out <- item
-				}
+				log.Printf("Flushing buffer: %v", buffer.Flush())
 				lastFlushTime = time.Now()
 			}
 		}
 
-		for _, item := range buffer.Flush() {
-			out <- item
-		}
+		log.Printf("Final flush: %v", buffer.Flush())
 	}()
 
 	return out
